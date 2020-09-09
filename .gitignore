@@ -1,0 +1,7 @@
+/models/
+/.idea/
+__pycache__
+/tests/.pytest_cache/
+/tests/tests_temp/
+.venv
+.vscode
