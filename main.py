@@ -29,6 +29,10 @@ from libs.networks import model_detect
 import libs.preprocessing as preprocessing
 import libs.postprocessing as postprocessing
 
+# 이미지 비교를 위한 라이브러리
+from skimage.metrics import structural_similarity
+import cv2
+
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
@@ -105,6 +109,10 @@ def process(input_path, output_path, model_name="u2net",
     if wmode == "file":  # File work mode
         image = model.process_image(input_path, preprocessing_method, postprocessing_method)
         __save_image_file__(image, os.path.basename(input_path), output_path, wmode)
+
+        # 원본 이미지와 변환된 이미지의 유사도를 구한다.
+        comp_img(input_path, output_path)
+
     elif wmode == "dir":  # Dir work mode
         # Start process
         files = os.listdir(input_path)
@@ -112,6 +120,10 @@ def process(input_path, output_path, model_name="u2net",
             file_path = os.path.join(input_path, file)
             image = model.process_image(file_path, preprocessing_method, postprocessing_method)
             __save_image_file__(image, file, output_path, wmode)
+
+            # 원본 이미지와 변환된 이미지의 유사도를 구한다.
+            output_file_name = os.path.splitext(file)[0] + '.png'
+            comp_img(file_path, output_path + output_file_name)
     else:
         raise Exception("Bad input parameter! Please indicate the correct path to the file or folder.")
 
@@ -147,6 +159,23 @@ def cli():
     else:
         process(input_path, output_path, model_name, preprocessing_method_name, postprocessing_method_name)
 
+# 이미지를 비교하여 유사도를 출력한다.
+def comp_img(img_path1, img_path2):
+    # load the two input images
+    imageA = cv2.imread(img_path1)
+    imageB = cv2.imread(img_path2)
+    
+    # 이미지를 Gray 스케일로 변경
+    grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+    grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+
+    # 이미지의 유사도 분석
+    mssim = structural_similarity(grayA, grayB, gaussian_weights=True, sigma=1.5, data_range=1.0)
+    # color 이미지로 유사도 분석
+    # mssim = structural_similarity(imageA, imageB, multichannel=True, gaussian_weights=True, sigma=1.5, data_range=1.0)
+    Similarity = (mssim * 100).astype("uint8")
+
+    print(f"{img_path1} [유사도: {Similarity}%]")
 
 if __name__ == "__main__":
     cli()
