@@ -57,13 +57,13 @@ def __save_image_file__(img, file_name, output_path, wmode):
     """
     # create output directory if it doesn't exist
     folder = os.path.dirname(output_path)
-    if folder != '':
+    if folder != "":
         os.makedirs(folder, exist_ok=True)
     if wmode == "file":
         file_name_out = os.path.basename(output_path)
-        if file_name_out == '':
+        if file_name_out == "":
             # Change file extension to png
-            file_name = os.path.splitext(file_name)[0] + '.png'
+            file_name = os.path.splitext(file_name)[0] + ".png"
             # Save image
             img.save(os.path.join(output_path, file_name))
         else:
@@ -72,19 +72,26 @@ def __save_image_file__(img, file_name, output_path, wmode):
                 img.save(output_path)
             except OSError as e:
                 if str(e) == "cannot write mode RGBA as JPEG":
-                    raise OSError("Error! "
-                                  "Please indicate the correct extension of the final file, for example: .png")
+                    raise OSError(
+                        "Error! "
+                        "Please indicate the correct extension of the final file, for example: .png"
+                    )
                 else:
                     raise e
     else:
         # Change file extension to png
-        file_name = os.path.splitext(file_name)[0] + '.png'
+        file_name = os.path.splitext(file_name)[0] + ".png"
         # Save image
         img.save(os.path.join(output_path, file_name))
 
 
-def process(input_path, output_path, model_name="u2net",
-            preprocessing_method_name="bbd-fastrcnn", postprocessing_method_name="rtb-bnb"):
+def process(
+    input_path,
+    output_path,
+    model_name="u2net",
+    preprocessing_method_name="bbd-fastrcnn",
+    postprocessing_method_name="rtb-bnb",
+):
     """
     Processes the file.
     :param input_path: The path to the image / folder with the images to be processed.
@@ -98,16 +105,22 @@ def process(input_path, output_path, model_name="u2net",
 
     model = model_detect(model_name)  # Load model
     if not model:
-        logger.warning("Warning! You specified an invalid model type. "
-                       "For image processing, the model with the best processing quality will be used. "
-                       "(u2net)")
-        model_name = "u2net"  # If the model line is wrong, select the model with better quality.
+        logger.warning(
+            "Warning! You specified an invalid model type. "
+            "For image processing, the model with the best processing quality will be used. "
+            "(u2net)"
+        )
+        model_name = (
+            "u2net"  # If the model line is wrong, select the model with better quality.
+        )
         model = model_detect(model_name)  # Load model
     preprocessing_method = preprocessing.method_detect(preprocessing_method_name)
     postprocessing_method = postprocessing.method_detect(postprocessing_method_name)
     wmode = __work_mode__(input_path)  # Get work mode
     if wmode == "file":  # File work mode
-        image = model.process_image(input_path, preprocessing_method, postprocessing_method)
+        image = model.process_image(
+            input_path, preprocessing_method, postprocessing_method
+        )
         __save_image_file__(image, os.path.basename(input_path), output_path, wmode)
 
         # 원본 이미지와 변환된 이미지의 유사도를 구한다.
@@ -116,36 +129,68 @@ def process(input_path, output_path, model_name="u2net",
     elif wmode == "dir":  # Dir work mode
         # Start process
         files = os.listdir(input_path)
-        for file in tqdm.tqdm(files, ascii=True, desc='Remove Background', unit='image'):
+        for file in tqdm.tqdm(
+            files, ascii=True, desc="Remove Background", unit="image"
+        ):
             file_path = os.path.join(input_path, file)
-            image = model.process_image(file_path, preprocessing_method, postprocessing_method)
+            image = model.process_image(
+                file_path, preprocessing_method, postprocessing_method
+            )
             __save_image_file__(image, file, output_path, wmode)
 
             # 원본 이미지와 변환된 이미지의 유사도를 구한다.
-            output_file_name = os.path.splitext(file)[0] + '.png'
+            output_file_name = os.path.splitext(file)[0] + ".png"
             comp_img(file_path, output_path + output_file_name)
     else:
-        raise Exception("Bad input parameter! Please indicate the correct path to the file or folder.")
+        raise Exception(
+            "Bad input parameter! Please indicate the correct path to the file or folder."
+        )
 
 
 def cli():
     """CLI"""
     parser = argparse.ArgumentParser(description=DESCRIPTION, usage=ARGS_HELP)
-    parser.add_argument('-i', required=True,
-                        help="Path to input file or dir.", action="store", dest="input_path")
-    parser.add_argument('-o', required=True,
-                        help="Path to output file or dir.", action="store", dest="output_path")
-    parser.add_argument('-m', required=False,
-                        help="Model name. Can be {} . U2NET is better to use.".format(MODELS_NAMES),
-                        action="store", dest="model_name", default="u2net")
-    parser.add_argument('-prep', required=False,
-                        help="Preprocessing method. Can be {} . `bbd-fastrcnn` is better to use."
-                        .format(PREPROCESS_METHODS),
-                        action="store", dest="preprocessing_method_name", default="bbd-fastrcnn")
-    parser.add_argument('-postp', required=False,
-                        help="Postprocessing method. Can be {} ."
-                             " `rtb-bnb` is better to use.".format(POSTPROCESS_METHODS),
-                        action="store", dest="postprocessing_method_name", default="rtb-bnb")
+    parser.add_argument(
+        "-i",
+        required=True,
+        help="Path to input file or dir.",
+        action="store",
+        dest="input_path",
+    )
+    parser.add_argument(
+        "-o",
+        required=True,
+        help="Path to output file or dir.",
+        action="store",
+        dest="output_path",
+    )
+    parser.add_argument(
+        "-m",
+        required=False,
+        help="Model name. Can be {} . U2NET is better to use.".format(MODELS_NAMES),
+        action="store",
+        dest="model_name",
+        default="u2net",
+    )
+    parser.add_argument(
+        "-prep",
+        required=False,
+        help="Preprocessing method. Can be {} . `bbd-fastrcnn` is better to use.".format(
+            PREPROCESS_METHODS
+        ),
+        action="store",
+        dest="preprocessing_method_name",
+        default="bbd-fastrcnn",
+    )
+    parser.add_argument(
+        "-postp",
+        required=False,
+        help="Postprocessing method. Can be {} ."
+        " `rtb-bnb` is better to use.".format(POSTPROCESS_METHODS),
+        action="store",
+        dest="postprocessing_method_name",
+        default="rtb-bnb",
+    )
     args = parser.parse_args()
     # Parse arguments
     input_path = args.input_path
@@ -155,27 +200,43 @@ def cli():
     postprocessing_method_name = args.postprocessing_method_name
 
     if model_name == "test":
-        print(input_path, output_path, model_name, preprocessing_method_name, postprocessing_method_name)
+        print(
+            input_path,
+            output_path,
+            model_name,
+            preprocessing_method_name,
+            postprocessing_method_name,
+        )
     else:
-        process(input_path, output_path, model_name, preprocessing_method_name, postprocessing_method_name)
+        process(
+            input_path,
+            output_path,
+            model_name,
+            preprocessing_method_name,
+            postprocessing_method_name,
+        )
+
 
 # 이미지를 비교하여 유사도를 출력한다.
 def comp_img(img_path1, img_path2):
     # load the two input images
     imageA = cv2.imread(img_path1)
     imageB = cv2.imread(img_path2)
-    
+
     # 이미지를 Gray 스케일로 변경
     grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
     grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
 
     # 이미지의 유사도 분석
-    mssim = structural_similarity(grayA, grayB, gaussian_weights=True, sigma=1.5, data_range=1.0)
+    mssim = structural_similarity(
+        grayA, grayB, gaussian_weights=True, sigma=1.5, data_range=1.0
+    )
     # color 이미지로 유사도 분석
     # mssim = structural_similarity(imageA, imageB, multichannel=True, gaussian_weights=True, sigma=1.5, data_range=1.0)
     Similarity = (mssim * 100).astype("uint8")
 
     print(f"{img_path1} [유사도: {Similarity}%]")
+
 
 if __name__ == "__main__":
     cli()
