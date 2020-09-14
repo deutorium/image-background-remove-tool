@@ -217,25 +217,25 @@ def cli():
         )
 
 
-# 이미지를 비교하여 유사도를 출력한다.
-def comp_img(img_path1, img_path2):
-    # load the two input images
-    imageA = cv2.imread(img_path1)
-    imageB = cv2.imread(img_path2)
+# # 이미지를 비교하여 유사도를 출력한다.
+# def comp_img(img_path1, img_path2):
+#     # load the two input images
+#     imageA = cv2.imread(img_path1)
+#     imageB = cv2.imread(img_path2)
 
-    # 이미지를 Gray 스케일로 변경
-    grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
-    grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+#     # 이미지를 Gray 스케일로 변경
+#     grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+#     grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
 
-    # 이미지의 유사도 분석
-    mssim = structural_similarity(
-        grayA, grayB, gaussian_weights=True, sigma=1.5, data_range=1.0
-    )
-    # color 이미지로 유사도 분석
-    # mssim = structural_similarity(imageA, imageB, multichannel=True, gaussian_weights=True, sigma=1.5, data_range=1.0)
-    Similarity = (mssim * 100).astype("uint8")
+#     # 이미지의 유사도 분석
+#     mssim = structural_similarity(
+#         grayA, grayB, gaussian_weights=True, sigma=1.5, data_range=1.0
+#     )
+#     # color 이미지로 유사도 분석
+#     # mssim = structural_similarity(imageA, imageB, multichannel=True, gaussian_weights=True, sigma=1.5, data_range=1.0)
+#     Similarity = (mssim * 100).astype("uint8")
 
-    print(f"{img_path1} [유사도: {Similarity}%]")
+#     print(f"{img_path1} [유사도: {Similarity}%]")
 
 
 if __name__ == "__main__":
